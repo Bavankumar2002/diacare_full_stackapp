@@ -1,0 +1,541 @@
+{
+	"info": {
+		"_postman_id": "diacare-api-collection-2026",
+		"name": "DiaCare Diabetes Management REST API",
+		"description": "Production-quality REST API collection for DiaCare diabetes patient management mobile application.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost/diacare_full_stack/backend",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "System Health",
+			"item": [
+				{
+					"name": "API Health Check & Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/index.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["index.php"]
+						}
+					}
+				},
+				{
+					"name": "Daily Health Tip",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tips/daily.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "tips", "daily.php"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "1. User Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('authToken', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Ramesh Kumar\",\n    \"email\": \"ramesh.kumar@example.com\",\n    \"phone\": \"9876543210\",\n    \"password\": \"SecurePass123!\",\n    \"confirm_password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register.php"]
+						}
+					}
+				},
+				{
+					"name": "2. User Login (Email or Phone)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('authToken', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identifier\": \"ramesh.kumar@example.com\",\n    \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login.php"]
+						}
+					}
+				},
+				{
+					"name": "3. Forgot Password - Request OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"request\",\n    \"identifier\": \"ramesh.kumar@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "forgot-password.php"]
+						}
+					}
+				},
+				{
+					"name": "4. Forgot Password - Verify Code & Reset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"action\": \"verify_and_reset\",\n    \"identifier\": \"ramesh.kumar@example.com\",\n    \"code\": \"123456\",\n    \"new_password\": \"NewSecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "forgot-password.php"]
+						}
+					}
+				},
+				{
+					"name": "5. Change Password (Authenticated)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"current_password\": \"SecurePass123!\",\n    \"new_password\": \"UpdatedPass2026!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/change-password.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "change-password.php"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile & Medical Details",
+			"item": [
+				{
+					"name": "Get Patient Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/get.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "profile", "get.php"]
+						}
+					}
+				},
+				{
+					"name": "Save / Update Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"full_name\": \"Ramesh Kumar\",\n    \"age\": 58,\n    \"dob\": \"1968-04-15\",\n    \"gender\": \"Male\",\n    \"height_cm\": 172.0,\n    \"weight_kg\": 74.5,\n    \"diabetes_type\": \"Type 2\",\n    \"year_diagnosed\": 2018,\n    \"current_medicines\": \"Metformin 500mg, Glimepiride 1mg\",\n    \"allergies\": \"Sulfa drugs\",\n    \"emergency_contact_name\": \"Priya (Daughter)\",\n    \"emergency_contact_phone\": \"9840012345\",\n    \"doctor_name\": \"Dr. A. Subramanian\",\n    \"doctor_hospital\": \"Apollo Hospital\",\n    \"daily_calorie_goal\": 1750\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/profile/update.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "profile", "update.php"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Blood Sugar Tracker",
+			"item": [
+				{
+					"name": "Add Normal Sugar Reading",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reading_value\": 115.0,\n    \"reading_type\": \"fasting\",\n    \"date\": \"2026-11-18\",\n    \"time\": \"07:30:00\",\n    \"notes\": \"Fasting reading before tea\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sugar/add.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sugar", "add.php"]
+						}
+					}
+				},
+				{
+					"name": "Add Danger Low Reading (Triggers Alert)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reading_value\": 62.0,\n    \"reading_type\": \"before_meal\",\n    \"date\": \"2026-11-18\",\n    \"time\": \"12:30:00\",\n    \"notes\": \"Felt mild trembling and sweating\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sugar/add.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sugar", "add.php"]
+						}
+					}
+				},
+				{
+					"name": "Get Sugar Readings (All, Today, Week, Month)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/sugar/get.php?period=all",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sugar", "get.php"],
+							"query": [
+								{
+									"key": "period",
+									"value": "all"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Sugar Reading",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sugar/delete.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sugar", "delete.php"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Calorie & Nutrition Tracker",
+			"item": [
+				{
+					"name": "Search Indian Food Catalog",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/calories/food-items.php?q=idli",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "calories", "food-items.php"],
+							"query": [
+								{
+									"key": "q",
+									"value": "idli"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Log Meal Entry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"meal_type\": \"breakfast\",\n    \"food_name\": \"2 Steamed Idlis with Sambar\",\n    \"calories\": 250,\n    \"carbs_g\": 44.0,\n    \"serving_quantity\": 1.0,\n    \"meal_date\": \"2026-11-18\",\n    \"meal_time\": \"08:30:00\",\n    \"notes\": \"Homemade fresh sambar\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/calories/add.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "calories", "add.php"]
+						}
+					}
+				},
+				{
+					"name": "Get Daily Calorie Summary & Weekly Chart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/calories/get.php?date=2026-11-18",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "calories", "get.php"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2026-11-18"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Meal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/calories/delete.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "calories", "delete.php"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Reminders & Alarms",
+			"item": [
+				{
+					"name": "Get All Reminders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reminders/get.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reminders", "get.php"]
+						}
+					}
+				},
+				{
+					"name": "Add Medicine Reminder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Metformin 500mg\",\n    \"type\": \"medicine\",\n    \"dosage\": \"1 tablet with water after food\",\n    \"time\": \"09:00:00\",\n    \"repeat_type\": \"daily\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reminders/add.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reminders", "add.php"]
+						}
+					}
+				},
+				{
+					"name": "Toggle Reminder Active / Inactive",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reminders/toggle.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reminders", "toggle.php"]
+						}
+					}
+				},
+				{
+					"name": "Delete Reminder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reminders/delete.php",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "reminders", "delete.php"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
