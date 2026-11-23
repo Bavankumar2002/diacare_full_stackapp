@@ -253,25 +253,33 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(10),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEE2E2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.water_drop_rounded, color: Color(0xFFEF4444), size: 20),
                       ),
-                      child: const Icon(Icons.water_drop_rounded, color: Color(0xFFEF4444), size: 20),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Latest Blood Sugar',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Latest Blood Sugar',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                if (reading != null)
+                if (reading != null) ...[
+                  const SizedBox(width: 8),
                   StatusBadge(status: reading.readingStatus),
+                ],
               ],
             ),
             const SizedBox(height: 14),
@@ -371,23 +379,30 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD1FAE5),
-                        borderRadius: BorderRadius.circular(10),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD1FAE5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.local_fire_department_rounded, color: Color(0xFF10B981), size: 20),
                       ),
-                      child: const Icon(Icons.local_fire_department_rounded, color: Color(0xFF10B981), size: 20),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      "Today's Calories",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          "Today's Calories",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   'Goal: $goal kcal',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade600),

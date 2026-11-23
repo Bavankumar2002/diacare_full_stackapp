@@ -89,6 +89,7 @@ class CalorieProvider with ChangeNotifier {
     required String date,
     required String time,
     String? notes,
+    String? imageUrl,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -103,6 +104,7 @@ class CalorieProvider with ChangeNotifier {
       'meal_date': date,
       'meal_time': time,
       'notes': notes ?? '',
+      'image_url': imageUrl ?? '',
     });
 
     _isLoading = false;

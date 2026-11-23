@@ -79,6 +79,67 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Request Mobile OTP (Static OTP: 1234)
+  Future<Map<String, dynamic>?> sendOtp(String phone) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final res = await _api.post('api/auth/send-otp.php', body: {
+      'phone': phone,
+    });
+
+    _isLoading = false;
+
+    if (res.success && res.data != null) {
+      notifyListeners();
+      return res.data as Map<String, dynamic>;
+    } else {
+      _errorMessage = res.message;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Verify Mobile OTP & Auto Register/Login
+  Future<bool> verifyOtp({
+    required String phone,
+    required String otp,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final res = await _api.post('api/auth/verify-otp.php', body: {
+      'phone': phone,
+      'otp': otp,
+    });
+
+    _isLoading = false;
+
+    if (res.success && res.data != null) {
+      _token = res.data['token'];
+      _api.setToken(_token);
+      _user = UserModel.fromJson(res.data['user']);
+      _hasProfile = res.data['has_profile'] == true;
+
+      if (res.data['profile'] != null) {
+        _profile = ProfileModel.fromJson(res.data['profile']);
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(AppConstants.keyJwtToken, _token!);
+      await prefs.setString(AppConstants.keyUserData, jsonEncode(_user!.toJson()));
+
+      notifyListeners();
+      return true;
+    } else {
+      _errorMessage = res.message;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// User Registration
   Future<bool> register({
     required String name,

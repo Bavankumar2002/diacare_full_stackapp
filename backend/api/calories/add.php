@@ -24,6 +24,7 @@ $quantity = isset($data['serving_quantity']) ? (float)$data['serving_quantity'] 
 $date     = trim($data['meal_date'] ?? date('Y-m-d'));
 $time     = trim($data['meal_time'] ?? date('H:i:s'));
 $notes    = trim($data['notes'] ?? '');
+$imageUrl = trim($data['image_url'] ?? '');
 
 $allowedTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
 if (!in_array($mealType, $allowedTypes)) {
@@ -42,8 +43,8 @@ try {
     $pdo = Database::getConnection();
 
     $stmt = $pdo->prepare("
-        INSERT INTO meals (user_id, meal_type, food_name, calories, carbs_g, serving_quantity, meal_date, meal_time, notes)
-        VALUES (:user_id, :meal_type, :food_name, :calories, :carbs_g, :serving_quantity, :meal_date, :meal_time, :notes)
+        INSERT INTO meals (user_id, meal_type, food_name, calories, carbs_g, serving_quantity, meal_date, meal_time, notes, image_url)
+        VALUES (:user_id, :meal_type, :food_name, :calories, :carbs_g, :serving_quantity, :meal_date, :meal_time, :notes, :image_url)
     ");
     $stmt->execute([
         ':user_id'          => $userId,
@@ -54,7 +55,8 @@ try {
         ':serving_quantity' => $quantity,
         ':meal_date'        => $date,
         ':meal_time'        => $time,
-        ':notes'            => $notes
+        ':notes'            => $notes,
+        ':image_url'        => !empty($imageUrl) ? $imageUrl : null
     ]);
 
     $mealId = (int)$pdo->lastInsertId();
@@ -69,7 +71,8 @@ try {
             'serving_quantity' => $quantity,
             'meal_date'        => $date,
             'meal_time'        => $time,
-            'notes'            => $notes
+            'notes'            => $notes,
+            'image_url'        => !empty($imageUrl) ? $imageUrl : null
         ]
     ], 201);
 

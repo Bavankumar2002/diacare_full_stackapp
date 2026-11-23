@@ -11,6 +11,7 @@ class FoodItemModel {
   final double carbsG;
   final double proteinG;
   final double fatG;
+  final String? imageUrl;
 
   FoodItemModel({
     required this.id,
@@ -21,6 +22,7 @@ class FoodItemModel {
     required this.carbsG,
     required this.proteinG,
     required this.fatG,
+    this.imageUrl,
   });
 
   factory FoodItemModel.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class FoodItemModel {
       carbsG: double.tryParse(json['carbs_g']?.toString() ?? '0') ?? 0.0,
       proteinG: double.tryParse(json['protein_g']?.toString() ?? '0') ?? 0.0,
       fatG: double.tryParse(json['fat_g']?.toString() ?? '0') ?? 0.0,
+      imageUrl: json['image_url']?.toString(),
     );
   }
 }

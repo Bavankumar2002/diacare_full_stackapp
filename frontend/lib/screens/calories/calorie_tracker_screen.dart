@@ -195,10 +195,15 @@ class _CalorieTrackerScreenState extends State<CalorieTrackerScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Daily Calorie Target',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                const Expanded(
+                  child: Text(
+                    'Daily Calorie Target',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -442,22 +447,152 @@ class _CalorieTrackerScreenState extends State<CalorieTrackerScreen> {
   }
 
   Widget _buildMealItemCard(MealModel meal) {
-    return Card(
-      elevation: 0.8,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        title: Text(
-          meal.foodName,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final timeStr =
+        meal.mealTime.length >= 5 ? meal.mealTime.substring(0, 5) : meal.mealTime;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          width: 1,
         ),
-        subtitle: Text(
-          '${meal.calories} kcal • ${meal.carbsG.toStringAsFixed(1)}g carbs • ${meal.mealTime.substring(0, 5)}',
-          style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // Food Item Image Thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 56,
+                height: 56,
+                child: meal.imageUrl != null && meal.imageUrl!.isNotEmpty
+                    ? Image.network(
+                        meal.imageUrl!,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return Container(
+                            color: const Color(0xFFF1F5F9),
+                            child: const Center(
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildMealFallbackIcon(meal.mealType),
+                      )
+                    : _buildMealFallbackIcon(meal.mealType),
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // Food Name & Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    meal.foodName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Text(
+                        '${meal.calories} kcal',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '•',
+                        style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${meal.carbsG.toStringAsFixed(1)}g carbs',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF0284C7),
+                        ),
+                      ),
+                      if (timeStr.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Text(
+                          '•',
+                          style: TextStyle(
+                              color: Colors.grey.shade400, fontSize: 11),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          timeStr,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Delete Action Button
+            IconButton(
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                color: Color(0xFF94A3B8),
+                size: 21,
+              ),
+              tooltip: 'Delete Meal',
+              onPressed: () => _confirmDeleteMeal(meal),
+            ),
+          ],
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFF94A3B8), size: 20),
-          onPressed: () => _confirmDeleteMeal(meal),
-        ),
+      ),
+    );
+  }
+
+  Widget _buildMealFallbackIcon(String mealType) {
+    IconData icon = Icons.restaurant_rounded;
+    final t = mealType.toLowerCase();
+    if (t == 'breakfast') icon = Icons.breakfast_dining_rounded;
+    if (t == 'lunch') icon = Icons.lunch_dining_rounded;
+    if (t == 'dinner') icon = Icons.dinner_dining_rounded;
+    if (t == 'snack') icon = Icons.local_cafe_rounded;
+
+    return Container(
+      color: const Color(0xFFE6FFFA),
+      child: Center(
+        child: Icon(icon, color: const Color(0xFF0D9488), size: 24),
       ),
     );
   }

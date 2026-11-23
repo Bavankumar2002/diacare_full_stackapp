@@ -12,6 +12,7 @@ class MealModel {
   final String mealDate;
   final String mealTime;
   final String? notes;
+  final String? imageUrl;
 
   MealModel({
     required this.id,
@@ -23,6 +24,7 @@ class MealModel {
     required this.mealDate,
     required this.mealTime,
     this.notes,
+    this.imageUrl,
   });
 
   factory MealModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class MealModel {
       mealDate: json['meal_date']?.toString() ?? '',
       mealTime: json['meal_time']?.toString() ?? '',
       notes: json['notes']?.toString(),
+      imageUrl: json['image_url']?.toString(),
     );
   }
 

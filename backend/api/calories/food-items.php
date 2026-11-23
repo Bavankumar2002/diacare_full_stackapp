@@ -16,27 +16,33 @@ $category = trim($_GET['category'] ?? '');
 try {
     $pdo = Database::getConnection();
 
-    $sql = "SELECT id, name, category, serving_size, calories, carbs_g, protein_g, fat_g FROM food_items WHERE 1=1";
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 250;
+    if ($limit <= 0 || $limit > 1000) $limit = 250;
+
+    $sql = "SELECT id, name, category, serving_size, calories, carbs_g, protein_g, fat_g, image_url FROM food_items WHERE 1=1";
     $params = [];
 
     if (!empty($query)) {
-        $sql .= " AND name LIKE :query";
+        $sql .= " AND (name LIKE :query OR category LIKE :query_cat)";
         $params[':query'] = "%{$query}%";
+        $params[':query_cat'] = "%{$query}%";
     }
 
-    if (!empty($category)) {
+    if (!empty($category) && strtolower($category) !== 'all') {
         $sql .= " AND category = :category";
         $params[':category'] = $category;
     }
 
-    $sql .= " ORDER BY category ASC, name ASC";
+    $sql .= " ORDER BY (category = 'Breakfast') DESC, (category = 'Lunch/Dinner') DESC, name ASC";
+
+    $sql .= " LIMIT " . $limit;
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $items = $stmt->fetchAll();
 
     // Also get distinct categories
-    $catStmt = $pdo->query("SELECT DISTINCT category FROM food_items ORDER BY category ASC");
+    $catStmt = $pdo->query("SELECT DISTINCT category FROM food_items WHERE category IS NOT NULL AND category != '' ORDER BY category ASC");
     $categories = $catStmt->fetchAll(PDO::FETCH_COLUMN);
 
     sendSuccess('Food catalog retrieved.', [

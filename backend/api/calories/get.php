@@ -23,10 +23,21 @@ try {
 
     // 2. Fetch meals for target date
     $mealStmt = $pdo->prepare("
-        SELECT id, meal_type, food_name, calories, carbs_g, serving_quantity, meal_date, meal_time, notes, created_at
-        FROM meals
-        WHERE user_id = :user_id AND meal_date = :meal_date
-        ORDER BY meal_time ASC
+        SELECT 
+            m.id, m.meal_type, m.food_name, m.calories, m.carbs_g, m.serving_quantity, m.meal_date, m.meal_time, m.notes, m.created_at,
+            COALESCE(
+                NULLIF(m.image_url, ''),
+                (
+                    SELECT f.image_url FROM food_items f 
+                    WHERE LOWER(f.name) = LOWER(m.food_name) 
+                       OR LOWER(m.food_name) LIKE CONCAT('%', LOWER(f.name), '%') 
+                       OR LOWER(f.name) LIKE CONCAT('%', SUBSTRING_INDEX(LOWER(m.food_name), ' ', 1), '%')
+                    LIMIT 1
+                )
+            ) AS image_url
+        FROM meals m
+        WHERE m.user_id = :user_id AND m.meal_date = :meal_date
+        ORDER BY m.meal_time ASC
     ");
     $mealStmt->execute([':user_id' => $userId, ':meal_date' => $targetDate]);
     $meals = $mealStmt->fetchAll();

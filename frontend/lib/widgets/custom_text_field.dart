@@ -59,6 +59,11 @@ class CustomTextField extends StatelessWidget {
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF94A3B8),
+              fontWeight: FontWeight.w400,
+            ),
             prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 22) : null,
             suffixIcon: suffixIcon,
           ),

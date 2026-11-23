@@ -39,6 +39,7 @@ class CustomButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             side: BorderSide(color: effectiveBg, width: 2),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppConstants.buttonRadius),
@@ -55,6 +56,7 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           backgroundColor: effectiveBg,
           foregroundColor: effectiveText,
           elevation: 2,
@@ -82,15 +84,20 @@ class CustomButton extends StatelessWidget {
     if (icon != null) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 22, color: color),
-          const SizedBox(width: 10),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: color,
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
             ),
           ),
         ],
@@ -99,8 +106,10 @@ class CustomButton extends StatelessWidget {
 
     return Text(
       text,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         color: color,
       ),

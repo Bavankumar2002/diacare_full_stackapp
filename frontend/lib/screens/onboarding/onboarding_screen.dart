@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../widgets/custom_button.dart';
-import '../auth/login_screen.dart';
+import '../auth/phone_login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -51,7 +51,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await prefs.setBool(AppConstants.keyHasSeenOnboarding, true);
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const PhoneLoginScreen()),
     );
   }
 
