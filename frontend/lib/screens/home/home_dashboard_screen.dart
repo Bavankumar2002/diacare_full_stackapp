@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants.dart';
+import '../../models/food_item_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/sugar_provider.dart';
@@ -37,6 +38,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   Future<void> _loadDashboardData() async {
     context.read<SugarProvider>().fetchReadings('today');
     context.read<CalorieProvider>().fetchDailySummary(DateTime.now());
+    context.read<CalorieProvider>().fetchMealSuggestions();
     context.read<ReminderProvider>().fetchReminders();
     context.read<ThemeProvider>().fetchDailyTip();
   }
@@ -132,7 +134,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               _buildCalorieCard(context, calProv),
               const SizedBox(height: 14),
 
-              // 5. Next Medicine / Checkup Reminder Card
+              // 5. Personalized Meal Suggestions
+              _buildMealSuggestionsSection(context, calProv),
+              const SizedBox(height: 14),
+
+              // 6. Next Medicine / Checkup Reminder Card
               _buildNextReminderCard(context, remProv),
               const SizedBox(height: 14),
 
@@ -468,6 +474,310 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Meal Suggestions Section
+  Widget _buildMealSuggestionsSection(BuildContext context, CalorieProvider calProv) {
+    final loading = calProv.suggestionsLoading;
+    final morning = calProv.morningSuggestion;
+    final afternoon = calProv.afternoonSuggestion;
+    final dinner = calProv.dinnerSuggestion;
+
+    final slots = [
+      (label: 'Morning',   emoji: '🌅', food: morning,   color: const Color(0xFFFFF7ED), accent: const Color(0xFFF97316)),
+      (label: 'Afternoon', emoji: '☀️', food: afternoon, color: const Color(0xFFF0FDF4), accent: const Color(0xFF10B981)),
+      (label: 'Dinner',    emoji: '🌙', food: dinner,    color: const Color(0xFFEEF2FF), accent: const Color(0xFF6366F1)),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              '🍽️ Meal Suggestions',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            ),
+            const Spacer(),
+            if (!loading)
+              GestureDetector(
+                onTap: () => calProv.fetchMealSuggestions(),
+                child: Row(
+                  children: [
+                    Icon(Icons.refresh_rounded, size: 14, color: Colors.grey.shade500),
+                    const SizedBox(width: 3),
+                    Text(
+                      'Refresh',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Diabetic-friendly ideas for today',
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        ),
+        const SizedBox(height: 10),
+        if (loading)
+          _buildSuggestionsShimmer()
+        else if (morning == null && afternoon == null && dinner == null)
+          _buildSuggestionsEmpty()
+        else
+          SizedBox(
+            height: 192,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: slots.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 10),
+              itemBuilder: (context, i) {
+                final slot = slots[i];
+                return _buildSuggestionCard(
+                  context: context,
+                  label: slot.label,
+                  emoji: slot.emoji,
+                  food: slot.food,
+                  bgColor: slot.color,
+                  accent: slot.accent,
+                );
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSuggestionCard({
+    required BuildContext context,
+    required String label,
+    required String emoji,
+    required FoodItemModel? food,
+    required Color bgColor,
+    required Color accent,
+  }) {
+    final cardWidth = MediaQuery.of(context).size.width * 0.62;
+
+    if (food == null) {
+      return SizedBox(
+        width: cardWidth,
+        child: Card(
+          color: bgColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildMealTimeChip(emoji: emoji, label: label, accent: accent),
+                const Spacer(),
+                Text(
+                  'No suggestion available',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final hasImage = food.imageUrl != null && food.imageUrl!.isNotEmpty;
+
+    return SizedBox(
+      width: cardWidth,
+      child: Card(
+        color: bgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AddMealScreen()),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Meal-time chip
+                _buildMealTimeChip(emoji: emoji, label: label, accent: accent),
+                const SizedBox(height: 10),
+
+                // Food thumbnail + name row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Food image
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: hasImage
+                            ? Image.network(
+                                food.imageUrl!,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (ctx, child, progress) {
+                                  if (progress == null) return child;
+                                  return Container(
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (ctx, e, st) => _buildFoodFallback(accent),
+                              )
+                            : _buildFoodFallback(accent),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // Food name + serving
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            food.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            food.servingSize,
+                            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // Nutrition pills row
+                Row(
+                  children: [
+                    _nutritionPill(
+                      icon: Icons.local_fire_department_rounded,
+                      value: '${food.calories} kcal',
+                      color: const Color(0xFFEF4444),
+                    ),
+                    const SizedBox(width: 6),
+                    _nutritionPill(
+                      icon: Icons.grain_rounded,
+                      value: '${food.carbsG.toStringAsFixed(0)}g carbs',
+                      color: const Color(0xFF0284C7),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMealTimeChip({required String emoji, required String label, required Color accent}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '$emoji $label',
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: accent),
+      ),
+    );
+  }
+
+  Widget _nutritionPill({required IconData icon, required String value, required Color color}) {
+    return Flexible(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 3),
+          Flexible(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFoodFallback(Color accent) {
+    return Container(
+      color: accent.withValues(alpha: 0.1),
+      child: Center(child: Icon(Icons.restaurant_rounded, color: accent, size: 24)),
+    );
+  }
+
+  Widget _buildSuggestionsShimmer() {
+    return SizedBox(
+      height: 192,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: 3,
+        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          return Container(
+            width: MediaQuery.of(context).size.width * 0.62,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSuggestionsEmpty() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.restaurant_menu_rounded, size: 36, color: Colors.grey.shade400),
+          const SizedBox(height: 8),
+          Text(
+            'No meal suggestions right now.',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+          ),
+        ],
       ),
     );
   }

@@ -18,12 +18,22 @@ class CalorieProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Meal suggestions (morning / afternoon / dinner)
+  FoodItemModel? _morningSuggestion;
+  FoodItemModel? _afternoonSuggestion;
+  FoodItemModel? _dinnerSuggestion;
+  bool _suggestionsLoading = false;
+
   DailyCalorieSummary? get summary => _summary;
   List<FoodItemModel> get foodCatalog => _foodCatalog;
   List<String> get foodCategories => _foodCategories;
   DateTime get selectedDate => _selectedDate;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  FoodItemModel? get morningSuggestion => _morningSuggestion;
+  FoodItemModel? get afternoonSuggestion => _afternoonSuggestion;
+  FoodItemModel? get dinnerSuggestion => _dinnerSuggestion;
+  bool get suggestionsLoading => _suggestionsLoading;
 
   String get formattedSelectedDate =>
       DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -57,6 +67,30 @@ class CalorieProvider with ChangeNotifier {
       _errorMessage = res.message;
       notifyListeners();
     }
+  }
+
+  /// Fetch personalized meal suggestions (morning / afternoon / dinner)
+  Future<void> fetchMealSuggestions() async {
+    _suggestionsLoading = true;
+    notifyListeners();
+
+    final res = await _api.get('api/calories/meal-suggestions.php');
+
+    _suggestionsLoading = false;
+
+    if (res.success && res.data != null) {
+      final m = res.data['morning'];
+      final a = res.data['afternoon'];
+      final d = res.data['dinner'];
+      _morningSuggestion = m != null ? FoodItemModel.fromJson(m) : null;
+      _afternoonSuggestion = a != null ? FoodItemModel.fromJson(a) : null;
+      _dinnerSuggestion = d != null ? FoodItemModel.fromJson(d) : null;
+    } else {
+      _morningSuggestion = null;
+      _afternoonSuggestion = null;
+      _dinnerSuggestion = null;
+    }
+    notifyListeners();
   }
 
   /// Search Indian foods catalog
