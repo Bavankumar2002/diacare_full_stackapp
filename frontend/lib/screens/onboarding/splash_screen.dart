@@ -117,11 +117,20 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // 1. Diabetic App Hero Vector Illustration
-                      const DiabeticIllustration(
-                        size: 260,
-                        animate: true,
-                        showBadges: true,
+                      // 1. Official DiaCare App Logo
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: Image.asset(
+                          'assets/images/app_logo.png',
+                          width: 140,
+                          height: 140,
+                          fit: BoxFit.contain,
+                          errorBuilder: (ctx, e, st) => const DiabeticIllustration(
+                            size: 200,
+                            animate: true,
+                            showBadges: true,
+                          ),
+                        ),
                       ),
 
                       const SizedBox(height: 20),

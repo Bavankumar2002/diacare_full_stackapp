@@ -12,7 +12,7 @@ import '../../providers/profile_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/disclaimer_banner.dart';
-import 'personal_details_screen.dart';
+import 'edit_profile_screen.dart';
 import '../auth/phone_login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -33,14 +33,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _navigateToEditProfile() async {
     final profileProv = context.read<ProfileProvider>();
-    await Navigator.push(
+    final updated = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => const PersonalDetailsScreen(isInitialSetup: false),
+        builder: (_) => const EditProfileScreen(),
       ),
     );
-    if (mounted) {
-      profileProv.fetchProfile();
+    if (updated == true && mounted) {
+      await profileProv.fetchProfile();
+      if (mounted) setState(() {});
     }
   }
 

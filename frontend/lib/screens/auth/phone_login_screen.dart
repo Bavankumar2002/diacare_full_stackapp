@@ -186,26 +186,41 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: RichText(
-          text: const TextSpan(
-            text: 'DiaCare',
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF1E293B),
-              letterSpacing: -0.5,
-            ),
-            children: [
-              TextSpan(
-                text: '.',
-                style: TextStyle(
-                  color: AppConstants.primaryTeal,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                'assets/images/app_logo.png',
+                width: 26,
+                height: 26,
+                fit: BoxFit.contain,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 8),
+            RichText(
+              text: const TextSpan(
+                text: 'DiaCare',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF1E293B),
+                  letterSpacing: -0.5,
+                ),
+                children: [
+                  TextSpan(
+                    text: '.',
+                    style: TextStyle(
+                      color: AppConstants.primaryTeal,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(

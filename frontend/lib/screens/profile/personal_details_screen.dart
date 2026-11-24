@@ -34,7 +34,7 @@ import '../main_navigation_screen.dart';
 class PersonalDetailsScreen extends StatefulWidget {
   final bool isInitialSetup;
 
-  const PersonalDetailsScreen({super.key, this.isInitialSetup = false});
+  const PersonalDetailsScreen({super.key, this.isInitialSetup = true});
 
   @override
   State<PersonalDetailsScreen> createState() => _PersonalDetailsScreenState();

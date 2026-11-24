@@ -285,15 +285,16 @@ class _SugarTrackerScreenState extends State<SugarTrackerScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Glucose Trend (mg/dL)',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                const Expanded(
+                  child: Text(
+                    'Glucose Trend (mg/dL)',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                Row(
-                  children: [
-                    _buildLegendPill('Normal (70-140)', AppConstants.statusNormal),
-                  ],
-                ),
+                const SizedBox(width: 8),
+                _buildLegendPill('Normal (70-140)', AppConstants.statusNormal),
               ],
             ),
             const SizedBox(height: 20),
@@ -413,23 +414,31 @@ class _SugarTrackerScreenState extends State<SugarTrackerScreen> {
                 size: 24,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(
-                        '${item.readingValue.toStringAsFixed(0)} mg/dL',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: item.statusColor,
+                      Flexible(
+                        child: Text(
+                          '${item.readingValue.toStringAsFixed(0)} mg/dL',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: item.statusColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
-                      StatusBadge(status: item.readingStatus, fontSize: 10),
+                      StatusBadge(
+                        status: item.readingStatus,
+                        fontSize: 10,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -447,9 +456,13 @@ class _SugarTrackerScreenState extends State<SugarTrackerScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        DateFormat('hh:mm a, d MMM').format(item.measuredAt),
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      Expanded(
+                        child: Text(
+                          DateFormat('hh:mm a, d MMM').format(item.measuredAt),
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -458,6 +471,8 @@ class _SugarTrackerScreenState extends State<SugarTrackerScreen> {
                     Text(
                       item.notes!,
                       style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontStyle: FontStyle.italic),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ],
@@ -465,6 +480,10 @@ class _SugarTrackerScreenState extends State<SugarTrackerScreen> {
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFF94A3B8), size: 20),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              visualDensity: VisualDensity.compact,
+              tooltip: 'Delete Reading',
               onPressed: () => _confirmDelete(item),
             ),
           ],
