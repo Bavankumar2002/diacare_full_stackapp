@@ -74,23 +74,65 @@ class CalorieProvider with ChangeNotifier {
     _suggestionsLoading = true;
     notifyListeners();
 
-    final res = await _api.get('api/calories/meal-suggestions.php');
+    try {
+      final res = await _api.get('api/calories/meal-suggestions.php');
+
+      if (res.success && res.data != null) {
+        final m = res.data['morning'];
+        final a = res.data['afternoon'];
+        final d = res.data['dinner'];
+        _morningSuggestion = m != null ? FoodItemModel.fromJson(m) : null;
+        _afternoonSuggestion = a != null ? FoodItemModel.fromJson(a) : null;
+        _dinnerSuggestion = d != null ? FoodItemModel.fromJson(d) : null;
+      }
+    } catch (_) {}
+
+    // Graceful fallback if backend was unavailable or returned empty
+    if (_morningSuggestion == null && _afternoonSuggestion == null && _dinnerSuggestion == null) {
+      _applyFallbackSuggestions();
+    }
 
     _suggestionsLoading = false;
-
-    if (res.success && res.data != null) {
-      final m = res.data['morning'];
-      final a = res.data['afternoon'];
-      final d = res.data['dinner'];
-      _morningSuggestion = m != null ? FoodItemModel.fromJson(m) : null;
-      _afternoonSuggestion = a != null ? FoodItemModel.fromJson(a) : null;
-      _dinnerSuggestion = d != null ? FoodItemModel.fromJson(d) : null;
-    } else {
-      _morningSuggestion = null;
-      _afternoonSuggestion = null;
-      _dinnerSuggestion = null;
-    }
     notifyListeners();
+  }
+
+  void _applyFallbackSuggestions() {
+    _morningSuggestion = FoodItemModel(
+      id: 1,
+      name: 'Idli with Vegetable Sambar (2 pcs)',
+      category: 'Breakfast',
+      servingSize: '2 idlis + 1 cup sambar',
+      calories: 210,
+      carbsG: 38.0,
+      proteinG: 7.5,
+      fatG: 2.0,
+      imageUrl: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=300&fit=crop&q=80',
+      description: 'Steamed, fermented & gentle on blood sugar',
+    );
+    _afternoonSuggestion = FoodItemModel(
+      id: 2,
+      name: 'Multigrain Roti with Dal Tadka & Salad',
+      category: 'Lunch/Dinner',
+      servingSize: '2 rotis + 1 bowl dal',
+      calories: 340,
+      carbsG: 45.0,
+      proteinG: 12.0,
+      fatG: 6.0,
+      imageUrl: 'https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=300&fit=crop&q=80',
+      description: 'High-fiber complex carbs for steady energy',
+    );
+    _dinnerSuggestion = FoodItemModel(
+      id: 3,
+      name: 'Palak Paneer with Methi Roti',
+      category: 'Curries & Sabzi',
+      servingSize: '1 bowl curry + 1 roti',
+      calories: 280,
+      carbsG: 22.0,
+      proteinG: 14.0,
+      fatG: 11.0,
+      imageUrl: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&fit=crop&q=80',
+      description: 'Low carb, nutrient-rich spinach & paneer',
+    );
   }
 
   /// Search Indian foods catalog

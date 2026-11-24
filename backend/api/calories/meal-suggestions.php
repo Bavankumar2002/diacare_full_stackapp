@@ -1,31 +1,58 @@
 <?php
 // =============================================================================
-// DiaCare - Meal Suggestions API
-// Returns one diabetic-friendly food suggestion each for Morning, Afternoon, Dinner
+// DiaCare Backend - Personalized Meal Suggestions API
+// Returns diabetic-friendly food suggestions for Morning, Afternoon, and Dinner
 // =============================================================================
 
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../middleware/auth.php';
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../utils/response.php';
+require_once __DIR__ . '/../../utils/jwt.php';
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Authorization, Content-Type');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
-
-$user = requireAuth();
-if (!$user) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+// Optional Authentication: supports both authenticated users and guest access
+$userId = null;
+$token = getBearerToken();
+if ($token) {
+    $payload = JWT::decode($token);
+    if ($payload && isset($payload['user_id'])) {
+        $userId = $payload['user_id'];
+    }
 }
 
 try {
-    $db = getDBConnection();
+    $pdo = Database::getConnection();
 
-    // Helper: pick one random food from given categories, preferring lower calories
-    function pickSuggestion(PDO $db, array $categories, int $maxCalories = 500): ?array {
+    // Helper: generate friendly diabetic nutrition description based on nutrients
+    function generateDescription(array $food, string $mealTime): string {
+        $cals = (int)($food['calories'] ?? 0);
+        $carbs = (float)($food['carbs_g'] ?? 0);
+        $protein = (float)($food['protein_g'] ?? 0);
+        $category = $food['category'] ?? '';
+
+        if ($carbs <= 15 && $carbs > 0) {
+            return "Low carb & gentle on blood sugar";
+        } elseif ($protein >= 8) {
+            return "Protein-rich • Helps steady energy";
+        } elseif ($cals <= 150) {
+            return "Light portion • Low glycemic impact";
+        } elseif ($category === 'Dal & Pulses') {
+            return "High fiber & plant protein";
+        } elseif ($category === 'Fruits & Salads') {
+            return "Nutrient-dense with natural vitamins";
+        } elseif ($mealTime === 'Morning') {
+            return "Balanced morning start for glucose stability";
+        } elseif ($mealTime === 'Afternoon') {
+            return "Satisfying lunch with steady carbs";
+        } else {
+            return "Light dinner to prevent overnight sugar spikes";
+        }
+    }
+
+    // Helper: pick one suggestion from specified categories, preferring lower calories
+    function pickSuggestion(PDO $pdo, array $categories, int $maxCalories, string $mealTime): ?array {
         $placeholders = implode(',', array_fill(0, count($categories), '?'));
-        $stmt = $db->prepare(
+        
+        // Try to pick a healthy option within calorie budget
+        $stmt = $pdo->prepare(
             "SELECT id, name, category, serving_size, calories, carbs_g, protein_g, fat_g, image_url
              FROM food_items
              WHERE category IN ($placeholders)
@@ -36,22 +63,23 @@ try {
         );
         $params = array_merge($categories, [$maxCalories]);
         $stmt->execute($params);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row ?: null;
-    }
+        $row = $stmt->fetch();
 
-    // Morning: Breakfast items (light – ≤ 350 kcal)
-    $morning = pickSuggestion($db, ['Breakfast', 'Beverages'], 350);
+        // Fallback if no item matched the calorie ceiling
+        if (!$row) {
+            $stmt = $pdo->prepare(
+                "SELECT id, name, category, serving_size, calories, carbs_g, protein_g, fat_g, image_url
+                 FROM food_items
+                 WHERE category IN ($placeholders)
+                 ORDER BY RAND()
+                 LIMIT 1"
+            );
+            $stmt->execute($categories);
+            $row = $stmt->fetch();
+        }
 
-    // Afternoon: Lunch/Dinner, Dal & Pulses (moderate – ≤ 500 kcal)
-    $afternoon = pickSuggestion($db, ['Lunch/Dinner', 'Dal & Pulses', 'Rice & Biryani'], 500);
-
-    // Dinner: Curries & Sabzi, Non-Veg, or Lunch/Dinner (lighter – ≤ 450 kcal)
-    $dinner = pickSuggestion($db, ['Curries & Sabzi', 'Non-Veg', 'Lunch/Dinner'], 450);
-
-    // Format a food row into a clean response object
-    function formatFood(?array $row): ?array {
         if (!$row) return null;
+
         return [
             'id'           => (int)$row['id'],
             'name'         => $row['name'],
@@ -62,16 +90,25 @@ try {
             'protein_g'    => (float)$row['protein_g'],
             'fat_g'        => (float)$row['fat_g'],
             'image_url'    => $row['image_url'] ?? null,
+            'description'  => generateDescription($row, $mealTime),
         ];
     }
 
-    echo json_encode([
-        'success'   => true,
-        'morning'   => formatFood($morning),
-        'afternoon' => formatFood($afternoon),
-        'dinner'    => formatFood($dinner),
+    // Morning: Breakfast, Beverages, Fruits & Salads (light ≤ 350 kcal)
+    $morning = pickSuggestion($pdo, ['Breakfast', 'Beverages', 'Fruits & Salads'], 350, 'Morning');
+
+    // Afternoon: Lunch/Dinner, Dal & Pulses, Rice & Biryani, Breads & Roti (≤ 500 kcal)
+    $afternoon = pickSuggestion($pdo, ['Lunch/Dinner', 'Dal & Pulses', 'Rice & Biryani', 'Breads & Roti'], 500, 'Afternoon');
+
+    // Dinner: Curries & Sabzi, Lunch/Dinner, Non-Veg, Dal & Pulses (light ≤ 450 kcal)
+    $dinner = pickSuggestion($pdo, ['Curries & Sabzi', 'Lunch/Dinner', 'Non-Veg', 'Dal & Pulses'], 450, 'Dinner');
+
+    sendSuccess('Meal suggestions retrieved successfully.', [
+        'morning'   => $morning,
+        'afternoon' => $afternoon,
+        'dinner'    => $dinner,
     ]);
+
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
+    sendError('Failed to fetch meal suggestions: ' . $e->getMessage(), 500);
 }

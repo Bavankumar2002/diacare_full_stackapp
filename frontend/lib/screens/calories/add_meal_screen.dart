@@ -14,8 +14,15 @@ import '../../widgets/custom_text_field.dart';
 
 class AddMealScreen extends StatefulWidget {
   final DateTime? initialDate;
+  final FoodItemModel? initialFood;
+  final String? initialMealType;
 
-  const AddMealScreen({super.key, this.initialDate});
+  const AddMealScreen({
+    super.key,
+    this.initialDate,
+    this.initialFood,
+    this.initialMealType,
+  });
 
   @override
   State<AddMealScreen> createState() => _AddMealScreenState();
@@ -66,16 +73,28 @@ class _AddMealScreenState extends State<AddMealScreen> {
     super.initState();
     _mealDate = widget.initialDate ?? DateTime.now();
 
-    // Default meal type based on current hour
-    final hour = DateTime.now().hour;
-    if (hour < 11) {
-      _mealType = 'breakfast';
-    } else if (hour < 16) {
-      _mealType = 'lunch';
-    } else if (hour < 21) {
-      _mealType = 'dinner';
+    // Default meal type based on parameter or current hour
+    if (widget.initialMealType != null) {
+      _mealType = widget.initialMealType!.toLowerCase();
     } else {
-      _mealType = 'snack';
+      final hour = DateTime.now().hour;
+      if (hour < 11) {
+        _mealType = 'breakfast';
+      } else if (hour < 16) {
+        _mealType = 'lunch';
+      } else if (hour < 21) {
+        _mealType = 'dinner';
+      } else {
+        _mealType = 'snack';
+      }
+    }
+
+    if (widget.initialFood != null) {
+      final f = widget.initialFood!;
+      _selectedCatalogItem = f;
+      _foodNameController.text = f.name;
+      _caloriesController.text = (f.calories * _servingQuantity).round().toString();
+      _carbsController.text = (f.carbsG * _servingQuantity).toStringAsFixed(1);
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

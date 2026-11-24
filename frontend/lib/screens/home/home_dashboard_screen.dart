@@ -526,14 +526,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         if (loading)
           _buildSuggestionsShimmer()
         else if (morning == null && afternoon == null && dinner == null)
-          _buildSuggestionsEmpty()
+          _buildSuggestionsEmpty(calProv)
         else
           SizedBox(
-            height: 192,
+            height: 228,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: slots.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 10),
+              separatorBuilder: (context, index) => const SizedBox(width: 12),
               itemBuilder: (context, i) {
                 final slot = slots[i];
                 return _buildSuggestionCard(
@@ -559,7 +559,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     required Color bgColor,
     required Color accent,
   }) {
-    final cardWidth = MediaQuery.of(context).size.width * 0.62;
+    final cardWidth = (MediaQuery.of(context).size.width * 0.74).clamp(260.0, 320.0);
 
     if (food == null) {
       return SizedBox(
@@ -587,31 +587,70 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     }
 
     final hasImage = food.imageUrl != null && food.imageUrl!.isNotEmpty;
+    final String mealTypeParam = label == 'Morning'
+        ? 'breakfast'
+        : (label == 'Afternoon' ? 'lunch' : 'dinner');
 
     return SizedBox(
       width: cardWidth,
       child: Card(
         color: bgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: accent.withValues(alpha: 0.2), width: 1),
+        ),
         elevation: 0,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () async {
             await Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AddMealScreen()),
+              MaterialPageRoute(
+                builder: (_) => AddMealScreen(
+                  initialFood: food,
+                  initialMealType: mealTypeParam,
+                ),
+              ),
             );
+            _loadDashboardData();
           },
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Meal-time chip
-                _buildMealTimeChip(emoji: emoji, label: label, accent: accent),
+                // 1. Meal-time chip + Quick Add prompt
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildMealTimeChip(emoji: emoji, label: label, accent: accent),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_rounded, size: 13, color: accent),
+                          const SizedBox(width: 2),
+                          Text(
+                            'Log Meal',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 10),
 
-                // Food thumbnail + name row
+                // 2. Food thumbnail + name row
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -619,8 +658,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: SizedBox(
-                        width: 56,
-                        height: 56,
+                        width: 54,
+                        height: 54,
                         child: hasImage
                             ? Image.network(
                                 food.imageUrl!,
@@ -652,7 +691,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         children: [
                           Text(
                             food.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13.5,
+                              color: Color(0xFF0F172A),
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -660,15 +703,31 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           Text(
                             food.servingSize,
                             style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
 
-                // Nutrition pills row
+                // 3. Short description
+                Text(
+                  food.description ?? 'Balanced diabetic-friendly portion',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                    height: 1.25,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Spacer(),
+
+                // 4. Nutrition pills row (calories, carbs, protein)
                 Row(
                   children: [
                     _nutritionPill(
@@ -676,12 +735,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       value: '${food.calories} kcal',
                       color: const Color(0xFFEF4444),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     _nutritionPill(
                       icon: Icons.grain_rounded,
-                      value: '${food.carbsG.toStringAsFixed(0)}g carbs',
+                      value: '${food.carbsG.toStringAsFixed(1)}g carbs',
                       color: const Color(0xFF0284C7),
                     ),
+                    if (food.proteinG > 0) ...[
+                      const SizedBox(width: 8),
+                      _nutritionPill(
+                        icon: Icons.fitness_center_rounded,
+                        value: '${food.proteinG.toStringAsFixed(1)}g pro',
+                        color: const Color(0xFF16A34A),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -712,7 +779,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 12, color: color),
-          const SizedBox(width: 3),
+          const SizedBox(width: 2),
           Flexible(
             child: Text(
               value,
@@ -735,14 +802,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
   Widget _buildSuggestionsShimmer() {
     return SizedBox(
-      height: 192,
+      height: 228,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: 3,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           return Container(
-            width: MediaQuery.of(context).size.width * 0.62,
+            width: (MediaQuery.of(context).size.width * 0.74).clamp(260.0, 320.0),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(16),
@@ -760,7 +827,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 
-  Widget _buildSuggestionsEmpty() {
+  Widget _buildSuggestionsEmpty(CalorieProvider calProv) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -774,8 +841,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Icon(Icons.restaurant_menu_rounded, size: 36, color: Colors.grey.shade400),
           const SizedBox(height: 8),
           Text(
-            'No meal suggestions right now.',
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+            'Unable to load meal suggestions.',
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () => calProv.fetchMealSuggestions(),
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: const Text('Load Suggestions', style: TextStyle(fontSize: 12)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppConstants.primaryTeal,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ],
       ),
@@ -890,12 +969,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               children: [
                 const Icon(Icons.tips_and_updates_rounded, color: Color(0xFF16A34A), size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  'Daily Health Tip • ${tip?.category ?? 'Diabetes Care'}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF15803D),
+                Expanded(
+                  child: Text(
+                    'Daily Health Tip • ${tip?.category ?? 'Diabetes Care'}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF15803D),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
