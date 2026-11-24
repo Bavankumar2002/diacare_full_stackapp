@@ -13,6 +13,7 @@ import 'providers/profile_provider.dart';
 import 'providers/sugar_provider.dart';
 import 'providers/calorie_provider.dart';
 import 'providers/reminder_provider.dart';
+import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/onboarding/splash_screen.dart';
 
@@ -40,6 +41,7 @@ void main() async {
         ChangeNotifierProvider<SugarProvider>(create: (_) => SugarProvider()),
         ChangeNotifierProvider<CalorieProvider>(create: (_) => CalorieProvider()),
         ChangeNotifierProvider<ReminderProvider>(create: (_) => ReminderProvider()),
+        ChangeNotifierProvider<NotificationProvider>(create: (_) => NotificationProvider()),
       ],
       child: const DiaCareApp(),
     ),

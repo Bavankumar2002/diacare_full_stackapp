@@ -12,12 +12,14 @@ import '../../providers/profile_provider.dart';
 import '../../providers/sugar_provider.dart';
 import '../../providers/calorie_provider.dart';
 import '../../providers/reminder_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/disclaimer_banner.dart';
 import '../../widgets/status_badge.dart';
 import '../tracker/add_sugar_screen.dart';
 import '../calories/add_meal_screen.dart';
 import '../reminders/add_reminder_screen.dart';
+import '../notifications/notifications_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -41,6 +43,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     context.read<CalorieProvider>().fetchMealSuggestions();
     context.read<ReminderProvider>().fetchReminders();
     context.read<ThemeProvider>().fetchDailyTip();
+    context.read<NotificationProvider>().fetchNotifications();
   }
 
   String _getGreeting() {
@@ -58,6 +61,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final calProv = context.watch<CalorieProvider>();
     final remProv = context.watch<ReminderProvider>();
     final themeProv = context.watch<ThemeProvider>();
+    final notifProv = context.watch<NotificationProvider>();
 
     final patientName = profile?.fullName.isNotEmpty == true
         ? profile!.fullName.split(' ').first
@@ -86,9 +90,45 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh Dashboard',
-            onPressed: _loadDashboardData,
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_outlined, size: 26),
+                if (notifProv.unreadCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        notifProv.unreadCount > 9 ? '9+' : notifProv.unreadCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            tooltip: 'Notifications',
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
+              _loadDashboardData();
+            },
           ),
         ],
       ),
