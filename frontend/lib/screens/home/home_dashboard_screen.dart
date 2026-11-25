@@ -100,7 +100,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           child: Container(
                             width: 38,
                             height: 4,
-                            margin: const EdgeInsets.only(top: 10, bottom: 12),
+                            margin: const EdgeInsets.only(top: 12, bottom: 16),
                             decoration: BoxDecoration(
                               color: const Color(0xFFCBD5E1),
                               borderRadius: BorderRadius.circular(2),
@@ -108,9 +108,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           ),
                         ),
 
-                        // Top Shortcut Row: Avatar + Trial Status + Calendar
+                        // Top Shortcut Row: Avatar + Name + Calendar
                         _buildTopShortcutBar(context, patientInitial, patientName),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
 
                         // "Your Trackers" Section Heading
                         const Text(
@@ -121,31 +121,31 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             color: Color(0xFF0F172A),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
                         // Tracker 1: Track Food (Calories, Snap Banner, Macros)
                         _buildTrackFoodCard(context, calProv),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 20),
 
                         // Tracker 2: Track Blood Sugar
                         _buildTrackSugarCard(context, sugarProv),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 20),
 
                         // Tracker 3: Medication & Alarms
                         _buildTrackRemindersCard(context, remProv),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 28),
 
                         // Personalized Meal Suggestions
                         _buildMealSuggestionsSection(context, calProv),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 28),
 
                         // Daily Diabetes Health Tip
                         _buildDailyTipCard(themeProv),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 26),
 
                         // Medical Disclaimer Banner
                         const DisclaimerBanner(),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 36),
                       ],
                     ),
                   ),
@@ -1098,7 +1098,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   'No readings logged yet today.',
                   style: TextStyle(fontSize: 13.5, color: Colors.grey.shade600),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
                 ElevatedButton.icon(
                   onPressed: () async {
                     await Navigator.push(
@@ -1330,7 +1330,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           'Diabetic-friendly ideas for today',
           style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         if (loading)
           _buildSuggestionsShimmer()
         else if (morning == null && afternoon == null && dinner == null)
@@ -1456,7 +1456,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
 
                 // Food thumbnail + name row
                 Row(
