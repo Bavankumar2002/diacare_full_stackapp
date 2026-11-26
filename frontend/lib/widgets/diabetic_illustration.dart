@@ -190,7 +190,7 @@ class _DiabeticIllustrationState extends State<DiabeticIllustration>
                     // Modern Diabetes Smart Monitor Body
                     Container(
                       width: 156 * scale,
-                      height: 172 * scale,
+                      height: 182 * scale,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(32 * scale),
                         gradient: const LinearGradient(
@@ -221,10 +221,18 @@ class _DiabeticIllustrationState extends State<DiabeticIllustration>
                         ],
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(12 * scale),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12 * scale,
+                          vertical: 9 * scale,
+                        ),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: SizedBox(
+                            width: 132 * scale,
+                            height: 160 * scale,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
                             // Top Device Brand Accent & LED
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -264,7 +272,7 @@ class _DiabeticIllustrationState extends State<DiabeticIllustration>
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(
                                 horizontal: 10 * scale,
-                                vertical: 8 * scale,
+                                vertical: 6 * scale,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF0F172A),
@@ -381,6 +389,8 @@ class _DiabeticIllustrationState extends State<DiabeticIllustration>
                         ),
                       ),
                     ),
+                  ),
+                ),
                   ],
                 ),
               ),
@@ -464,8 +474,8 @@ class _DiabeticIllustrationState extends State<DiabeticIllustration>
     required double scale,
   }) {
     return Container(
-      width: 26 * scale,
-      height: 26 * scale,
+      width: 24 * scale,
+      height: 24 * scale,
       decoration: BoxDecoration(
         color: const Color(0xFFE2E8F0),
         shape: BoxShape.circle,

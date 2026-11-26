@@ -2,7 +2,6 @@
 // DiaCare - Core Application Constants
 // =============================================================================
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class AppConstants {
@@ -14,24 +13,9 @@ class AppConstants {
       'DiaCare is for tracking only and does not replace professional medical advice. Always consult your doctor for medical decisions.';
 
   // Default Backend API Base URL
-  // - Real Android Device over Wi-Fi: http://192.168.1.49/diacare_full_stack/backend
-  // - Android Emulator: http://10.0.2.2/diacare_full_stack/backend
-  // - Flutter Web / Windows Desktop: http://localhost/diacare_full_stack/backend
+  // Live GoDaddy Host: https://shreetechhub.com/demosite/diacare
   static String get defaultBaseUrl {
-    if (kIsWeb) {
-      return 'http://localhost/diacare_full_stack/backend';
-    }
-    // For mobile platforms, default to your development machine's local LAN IP
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return 'http://192.168.1.49/diacare_full_stack/backend';
-      case TargetPlatform.windows:
-      case TargetPlatform.macOS:
-      case TargetPlatform.linux:
-        return 'http://localhost/diacare_full_stack/backend';
-      default:
-        return 'http://192.168.1.49/diacare_full_stack/backend';
-    }
+    return 'https://shreetechhub.com/demosite/diacare';
   }
 
   // Local Storage Keys

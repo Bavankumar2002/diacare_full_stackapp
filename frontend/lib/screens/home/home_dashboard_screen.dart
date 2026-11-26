@@ -25,6 +25,7 @@ import '../reminders/add_reminder_screen.dart';
 import '../reminders/reminders_screen.dart';
 import '../profile/profile_screen.dart';
 import '../notifications/notifications_screen.dart';
+import '../subscription/premium_offer_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -34,12 +35,31 @@ class HomeDashboardScreen extends StatefulWidget {
 }
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
+  static bool _hasShownAdThisLaunch = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadDashboardData();
+      _showLaunchAdIfNeeded();
     });
+  }
+
+  void _showLaunchAdIfNeeded() {
+    if (!_hasShownAdThisLaunch) {
+      _hasShownAdThisLaunch = true;
+      Future.delayed(const Duration(milliseconds: 650), () {
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const PremiumOfferScreen(isAdMode: true),
+              fullscreenDialog: true,
+            ),
+          );
+        }
+      });
+    }
   }
 
   Future<void> _loadDashboardData() async {
@@ -1728,169 +1748,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   // ===========================================================================
-  // 8. Exclusive Deal Bottom Sheet Modal
+  // 8. Exclusive Deal / Premium Offer Navigation
   // ===========================================================================
   void _showExclusiveDealSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 18),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFEF08A),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFB45309), size: 28),
-                  ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'DiaCare Plus 2026 Deal',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                        ),
-                        Text(
-                          'Exclusive member benefits unlocked',
-                          style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-
-              _buildDealFeatureItem(
-                icon: Icons.camera_alt_rounded,
-                title: 'Snap Food Calorie AI',
-                desc: 'Instant macro & carbohydrate breakdown from Indian food photos.',
-              ),
-              const SizedBox(height: 12),
-              _buildDealFeatureItem(
-                icon: Icons.insights_rounded,
-                title: 'Continuous Glucose Insights',
-                desc: 'Smart predictive alerts for fasting & post-prandial spikes.',
-              ),
-              const SizedBox(height: 12),
-              _buildDealFeatureItem(
-                icon: Icons.picture_as_pdf_rounded,
-                title: 'Doctor PDF Clinical Reports',
-                desc: 'One-tap export of 30-day sugar charts & medication logs.',
-              ),
-              const SizedBox(height: 22),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFBBF7D0)),
-                ),
-                child: const Row(
-                  children: [
-                    Text('🎉', style: TextStyle(fontSize: 22)),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Special 2026 Offer: 60% OFF',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(0xFF15803D)),
-                          ),
-                          Text(
-                            'Just ₹499/year (Was ₹1,299). Cancel anytime.',
-                            style: TextStyle(fontSize: 12, color: Color(0xFF166534)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('DiaCare Plus 2026 offer activated for your account!'),
-                      backgroundColor: AppConstants.primaryTeal,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  backgroundColor: const Color(0xFF0F766E),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: const Text('Claim Exclusive 2026 Deal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDealFeatureItem({
-    required IconData icon,
-    required String title,
-    required String desc,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0FDFA),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: const Color(0xFF0F766E), size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              const SizedBox(height: 2),
-              Text(desc, style: TextStyle(fontSize: 12.5, color: Colors.grey.shade600, height: 1.3)),
-            ],
-          ),
-        ),
-      ],
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const PremiumOfferScreen(isAdMode: true),
+        fullscreenDialog: true,
+      ),
     );
   }
 

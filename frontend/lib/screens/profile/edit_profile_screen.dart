@@ -71,6 +71,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   ];
 
   final List<String> _commonMedications = [
+    'Karela Jamun Juice',
+    'Gurmar (Gymnema)',
+    'Vijaysar',
+    'Methi (Fenugreek)',
+    'Chandraprabha Vati',
+    'Neem & Giloy',
     'Metformin',
     'Glimepiride',
     'Insulin Glargine',
@@ -702,7 +708,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       runSpacing: 6,
                       children: _commonMedications.map((med) {
                         final isAdded = _medicinesController.text.contains(med);
+                        final isAyurvedic = [
+                          'Karela Jamun Juice',
+                          'Gurmar (Gymnema)',
+                          'Vijaysar',
+                          'Methi (Fenugreek)',
+                          'Chandraprabha Vati',
+                          'Neem & Giloy',
+                        ].contains(med);
                         return FilterChip(
+                          avatar: isAyurvedic
+                              ? const Icon(Icons.eco, size: 13, color: Color(0xFF15803D))
+                              : null,
                           label: Text(med, style: const TextStyle(fontSize: 11)),
                           selected: isAdded,
                           onSelected: (_) => _toggleMedication(med),

@@ -2,6 +2,7 @@
 // DiaCare - Diabetes Patient Management System (Main Entry Point)
 // =============================================================================
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/api_service.dart';
@@ -17,8 +18,25 @@ import 'providers/notification_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/onboarding/splash_screen.dart';
 
+/// Custom HttpOverrides to prevent SSL certificate handshake errors on older Android devices
+class DiaCareHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) {
+        return host.contains('shreetechhub.com') ||
+            host.contains('192.168.') ||
+            host == 'localhost' ||
+            host == '10.0.2.2';
+      };
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 0. Ensure SSL compatibility on older Android devices
+  HttpOverrides.global = DiaCareHttpOverrides();
 
   // 1. Initialize API Client with saved tokens and base URLs
   await ApiService().init();

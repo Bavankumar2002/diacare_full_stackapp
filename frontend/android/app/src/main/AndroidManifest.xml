@@ -1,4 +1,7 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-sdk tools:overrideLibrary="com.dexterous.flutterlocalnotifications, io.flutter.plugins.sharedpreferences, io.flutter.plugins.urllauncher, io.flutter.plugins.pathprovider" />
 
     <!-- Permissions required for DiaCare -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -15,6 +18,7 @@
         android:label="DiaCare"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"

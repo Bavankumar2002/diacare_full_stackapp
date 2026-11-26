@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              '• Real Phone (Wi-Fi): http://192.168.1.49/diacare_full_stack/backend\n• Android Emulator: http://10.0.2.2/diacare_full_stack/backend\n• Web/Desktop: http://localhost/diacare_full_stack/backend',
+              'Backend API URL (Hosted on GoDaddy):',
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 12),
@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: urlController,
               decoration: const InputDecoration(
                 labelText: 'Base API URL',
-                hintText: 'http://192.168.1.49/diacare_full_stack/backend',
+                hintText: 'https://shreetechhub.com/demosite/diacare',
               ),
             ),
           ],

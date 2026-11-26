@@ -9,7 +9,7 @@ import '../../core/constants.dart';
 import '../../core/api_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/diabetic_illustration.dart';
-import 'otp_verification_screen.dart';
+import '../subscription/premium_offer_screen.dart';
 
 class PhoneLoginScreen extends StatefulWidget {
   const PhoneLoginScreen({super.key});
@@ -86,11 +86,14 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
         ),
       );
 
-      // Slide smoothly to OTP Verification Screen
+      // Navigate to Cost / Premium Offer Screen first, which then proceeds to OTP Verification Screen
       Navigator.of(context).push(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              OtpVerificationScreen(phone: phone),
+              PremiumOfferScreen(
+            phone: phone,
+            isRegistrationFlow: true,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
@@ -134,7 +137,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'If using a physical phone, make sure your phone and PC are on the same Wi-Fi network:',
+              'Backend API URL (Hosted on GoDaddy):',
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 12),
@@ -143,7 +146,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Base URL',
-                hintText: 'http://192.168.1.49/diacare_full_stack/backend',
+                hintText: 'https://shreetechhub.com/demosite/diacare',
               ),
             ),
           ],

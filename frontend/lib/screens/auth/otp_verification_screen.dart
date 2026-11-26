@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants.dart';
 import '../../providers/auth_provider.dart';
 import '../profile/personal_details_screen.dart';
@@ -13,10 +14,12 @@ import '../main_navigation_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phone;
+  final String selectedPlan;
 
   const OtpVerificationScreen({
     super.key,
     required this.phone,
+    this.selectedPlan = 'free',
   });
 
   @override
@@ -120,9 +123,18 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     setState(() => _isLoading = false);
 
     if (success) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_subscription_plan', widget.selectedPlan);
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mobile verified successfully! Welcome to DiaCare.'),
+        SnackBar(
+          content: Text(
+            widget.selectedPlan == 'premium'
+                ? 'Welcome to DiaCare Plus! 50% Festive Offer (₹150/mo) active.'
+                : 'Mobile verified successfully! Welcome to DiaCare.',
+          ),
           backgroundColor: AppConstants.statusNormal,
         ),
       );

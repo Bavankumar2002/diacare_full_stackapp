@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,11 +36,9 @@ class ApiService {
   String get baseUrl => _baseUrl;
   String? get token => _authToken;
 
-  // Known development endpoints to test automatically
+  // Known backend endpoints to test automatically
   static const List<String> _candidateUrls = [
-    'http://192.168.1.49/diacare_full_stack/backend', // Real physical device on Wi-Fi
-    'http://10.0.2.2/diacare_full_stack/backend',      // Android Emulator
-    'http://localhost/diacare_full_stack/backend',     // Web / Windows
+    'https://shreetechhub.com/demosite/diacare',
   ];
 
   /// Initialize service with stored token and base URL
@@ -47,7 +46,12 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     _authToken = prefs.getString(AppConstants.keyJwtToken);
     final customUrl = prefs.getString(AppConstants.keyBaseUrl);
-    if (customUrl != null && customUrl.trim().isNotEmpty && !customUrl.contains('diacare_api')) {
+    if (customUrl != null &&
+        customUrl.trim().isNotEmpty &&
+        !customUrl.contains('diacare_api') &&
+        !customUrl.contains('192.168.') &&
+        !customUrl.contains('localhost') &&
+        !customUrl.contains('10.0.2.2')) {
       _baseUrl = customUrl.trim();
     } else {
       _baseUrl = AppConstants.defaultBaseUrl;
@@ -73,7 +77,9 @@ class ApiService {
     for (final candidate in _candidateUrls) {
       try {
         final uri = Uri.parse('$candidate/index.php');
-        final response = await http.get(uri).timeout(const Duration(milliseconds: 2500));
+        final response = await http
+            .get(uri)
+            .timeout(const Duration(milliseconds: 2500));
         if (response.statusCode == 200) {
           _baseUrl = candidate;
           final prefs = await SharedPreferences.getInstance();
@@ -97,7 +103,11 @@ class ApiService {
     return headers;
   }
 
-  Uri _buildUri(String baseUrl, String endpoint, [Map<String, dynamic>? queryParams]) {
+  Uri _buildUri(
+    String baseUrl,
+    String endpoint, [
+    Map<String, dynamic>? queryParams,
+  ]) {
     var cleanBase = baseUrl.replaceAll(RegExp(r'/+$'), '');
     var cleanEndpoint = endpoint.replaceAll(RegExp(r'^/+'), '');
     var fullUrl = '$cleanBase/$cleanEndpoint';
@@ -111,7 +121,10 @@ class ApiService {
   }
 
   /// Send GET request with automatic fallback
-  Future<ApiResponse> get(String endpoint, {Map<String, dynamic>? queryParams}) async {
+  Future<ApiResponse> get(
+    String endpoint, {
+    Map<String, dynamic>? queryParams,
+  }) async {
     try {
       final uri = _buildUri(_baseUrl, endpoint, queryParams);
       final response = await http
@@ -133,7 +146,10 @@ class ApiService {
   }
 
   /// Send POST request with automatic fallback
-  Future<ApiResponse> post(String endpoint, {Map<String, dynamic>? body}) async {
+  Future<ApiResponse> post(
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) async {
     try {
       final uri = _buildUri(_baseUrl, endpoint);
       final response = await http
@@ -159,7 +175,10 @@ class ApiService {
   }
 
   /// Send DELETE request with automatic fallback
-  Future<ApiResponse> delete(String endpoint, {Map<String, dynamic>? body}) async {
+  Future<ApiResponse> delete(
+    String endpoint, {
+    Map<String, dynamic>? body,
+  }) async {
     try {
       final uri = _buildUri(_baseUrl, endpoint);
       final response = await http
@@ -198,19 +217,25 @@ class ApiService {
         final uri = _buildUri(workingUrl, endpoint, queryParams);
         http.Response response;
         if (method == 'POST') {
-          response = await http.post(
-            uri,
-            headers: _buildHeaders(),
-            body: body != null ? jsonEncode(body) : null,
-          ).timeout(const Duration(seconds: 8));
+          response = await http
+              .post(
+                uri,
+                headers: _buildHeaders(),
+                body: body != null ? jsonEncode(body) : null,
+              )
+              .timeout(const Duration(seconds: 8));
         } else if (method == 'DELETE') {
-          response = await http.delete(
-            uri,
-            headers: _buildHeaders(),
-            body: body != null ? jsonEncode(body) : null,
-          ).timeout(const Duration(seconds: 8));
+          response = await http
+              .delete(
+                uri,
+                headers: _buildHeaders(),
+                body: body != null ? jsonEncode(body) : null,
+              )
+              .timeout(const Duration(seconds: 8));
         } else {
-          response = await http.get(uri, headers: _buildHeaders()).timeout(const Duration(seconds: 8));
+          response = await http
+              .get(uri, headers: _buildHeaders())
+              .timeout(const Duration(seconds: 8));
         }
         return _handleResponse(response);
       } catch (_) {}
@@ -218,7 +243,8 @@ class ApiService {
 
     return ApiResponse(
       success: false,
-      message: 'Cannot connect to backend server at $_baseUrl. Ensure XAMPP Apache is running and your phone and PC are on the same Wi-Fi network.',
+      message:
+          'Cannot connect to backend server at $_baseUrl. Ensure XAMPP Apache is running and your phone and PC are on the same Wi-Fi network.',
       statusCode: 0,
     );
   }
@@ -226,7 +252,8 @@ class ApiService {
   ApiResponse _handleResponse(http.Response response) {
     try {
       final decoded = jsonDecode(response.body);
-      final bool isSuccess = response.statusCode >= 200 &&
+      final bool isSuccess =
+          response.statusCode >= 200 &&
           response.statusCode < 300 &&
           decoded['status'] == 'success';
       final String message = decoded['message'] ?? 'Response received';
@@ -241,7 +268,8 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Server response parsing failed (${response.statusCode}): ${response.body}',
+        message:
+            'Server response parsing failed (${response.statusCode}): ${response.body}',
         statusCode: response.statusCode,
       );
     }
